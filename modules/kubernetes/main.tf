@@ -49,5 +49,14 @@ module "gke" {
   horizontal_pod_autoscaling = true
   network_policy             = true
   create_service_account = false
+}
 
+resource "null_resource" "get_kube_credetial" {
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials  ${var.k8s_cluster_name} --region=${var.region}"
+  }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm -f  ~/.kube/config || true"
+  }
 }
