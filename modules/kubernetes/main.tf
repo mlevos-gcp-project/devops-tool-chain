@@ -52,6 +52,25 @@ module "gke" {
   horizontal_pod_autoscaling = true
   network_policy             = true
   create_service_account     = false
+
+  node_pools = [
+    {
+      name         = "pool-01"
+      autoscaling = false
+      node_count = 5
+      auto_upgrade = true
+    }
+  ]
+  node_pools_metadata = {
+    pool-01 = {
+      shutdown-script = file("${path.module}/data/shutdown-script.sh")
+    }
+  }
+  node_pools_tags = {
+    pool-01 = [
+      "pool-01-tags",
+    ]
+  }
 }
 
 resource "null_resource" "get_kube_credetial" {
