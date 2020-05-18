@@ -4,13 +4,32 @@ variable resource_folder {
 variable devops_namespace {
 }
 
-variable depends {
-        type = string
-        description= "Wait for K8s cluster provisioning"
+variable dependencies {
+  type = list
 }
 
-variable devops_namespace_file {
-        type = string
-        description="Path to namespace file creation"
-        default = "/create_namespace.yml"
+variable issuer_name {
+  type        = string
+  description = "Let's Encrypt issuer name"
+}
+variable issuer_email {
+  type        = string
+  description = "Let's Encrypt issuer email"
+}
+
+
+variable cluster_domain {
+  type        = string
+  description = "The cluster domain"
+}
+
+variable create_issuer_yml {
+  type        = string
+  description = "Path to namespace file creation"
+  default     = "/create_issuer.yml"
+}
+
+variable jenkins_password {
+  type        = string
+  description = "Jenkins Password"
 }

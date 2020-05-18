@@ -3,6 +3,8 @@ provider "google" {
   project     = var.project_name
   region      = var.region
 }
+provider "kubernetes" {}
+
 resource "null_resource" "activate_service_account" {
   provisioner "local-exec" {
     command = "gcloud auth activate-service-account --project=${var.project_name} --key-file=${var.google_api_key}"
@@ -56,8 +58,8 @@ module "gke" {
   node_pools = [
     {
       name         = "pool-01"
-      autoscaling = false
-      node_count = 5
+      autoscaling  = false
+      node_count   = 5
       auto_upgrade = true
     }
   ]
@@ -73,7 +75,15 @@ module "gke" {
   }
 }
 
-resource "null_resource" "get_kube_credetial" {
+/** This resource is creat to use module depences **/
+resource "null_resource" "print_created_message" {
+  provisioner "local-exec" {
+    command = "echo New cluster ${module.gke.name} created with teh endpoitn ${module.gke.endpoint} "
+  }
+}
+
+
+resource "null_resource" "get_kube_credential" {
   provisioner "local-exec" {
     command = "gcloud container clusters get-credentials  ${module.gke.name} --region=${module.gke.region}"
   }
@@ -81,4 +91,51 @@ resource "null_resource" "get_kube_credetial" {
     when    = destroy
     command = "rm -f  ~/.kube/config || true"
   }
+  depends_on = [
+    null_resource.print_created_message
+  ]
+}
+
+resource "helm_release" "ingress" {
+  name  = "nginx-ingress"
+  chart = "stable/nginx-ingress"
+  depends_on = [
+    null_resource.get_kube_credential
+  ]
+}
+
+resource "helm_release" "cert_manager" {
+  name       = "cert-manager"
+  chart      = "jetstack/cert-manager"
+  version = "v0.15.0"
+
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+  depends_on = [
+    null_resource.get_kube_credential
+  ]
+}
+
+
+data "kubernetes_service" "nginx_ingress" {
+  metadata {
+    name = "nginx-ingress-controller"
+  }
+  depends_on = [
+    helm_release.ingress
+  ]
+}
+
+data "google_dns_managed_zone" "env_dns_zone" {
+  name = "mlevostre"
+}
+
+resource "google_dns_record_set" "ingress_domain" {
+  name         = "*.${data.google_dns_managed_zone.env_dns_zone.dns_name}"
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.env_dns_zone.name
+  rrdatas      = [data.kubernetes_service.nginx_ingress.load_balancer_ingress.0.ip]
 }
