@@ -33,3 +33,18 @@ variable jenkins_password {
   type        = string
   description = "Jenkins Password"
 }
+
+variable google_client_access_token {
+  type        = string
+  description = "Goolge GCP client access token"
+}
+
+variable "gke_endpoint"{
+  type        = string
+  description = "GKE endpoint url"
+}
+
+variable "gke_ca_certifacte"{
+  type        = string
+  description = "GKE ca certificate not in Base64"
+}

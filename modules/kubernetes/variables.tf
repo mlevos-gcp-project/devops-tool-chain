@@ -44,3 +44,10 @@ variable create_issuer_yml {
   description = "Path to namespace file creation"
   default     = "/create_issuer.yml"
 }
+
+variable google_client_access_token {
+  type        = string
+  description = "Goolge GCP client access token"
+}
+
+

@@ -1,9 +1,20 @@
-provider "google" {
-  credentials = file("${var.google_api_key}")
-  project     = var.project_name
-  region      = var.region
+
+
+provider "kubernetes" {
+  load_config_file       = false
+  host                   = module.gke.endpoint
+  token                  = var.google_client_access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
-provider "kubernetes" {}
+
+provider "helm" {
+  kubernetes {
+    load_config_file       = false
+    host                   = module.gke.endpoint
+    token                  = var.google_client_access_token
+    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+  }
+}
 
 resource "null_resource" "activate_service_account" {
   provisioner "local-exec" {
@@ -105,8 +116,8 @@ resource "helm_release" "ingress" {
 }
 
 resource "helm_release" "cert_manager" {
-  name       = "cert-manager"
-  chart      = "jetstack/cert-manager"
+  name    = "cert-manager"
+  chart   = "jetstack/cert-manager"
   version = "v0.15.0"
 
   set {

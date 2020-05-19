@@ -1,3 +1,10 @@
+provider "kubernetes" {
+  load_config_file       = false
+  host                   = var.gke_endpoint
+  token                  = var.google_client_access_token
+  cluster_ca_certificate = base64decode(var.gke_ca_certifacte)
+}
+
 resource "null_resource" "dependency_getter" {
   provisioner "local-exec" {
     command = "echo ${length(var.dependencies)}"
@@ -65,4 +72,7 @@ resource "null_resource" "jenkins" {
       PASSWORD = var.jenkins_password
     }
   }
+  depends_on = [
+    null_resource.create_issuer
+  ]
 }

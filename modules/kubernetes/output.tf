@@ -7,3 +7,11 @@ output "cluster_domain" {
   # remove the dote at the end
   value = trimsuffix( data.google_dns_managed_zone.env_dns_zone.dns_name,  ".")
 }
+
+output "gke_endpoint"{
+  value = module.gke.endpoint
+}
+
+output "gke_ca_certifacte"{
+  value = module.gke.ca_certificate
+}
