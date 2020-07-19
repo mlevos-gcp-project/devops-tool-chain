@@ -1,5 +1,4 @@
 master:
-  adminPassword: $PASSWORD
   resources:
     requests:
       cpu: "50m"
@@ -10,7 +9,49 @@ master:
 
   serviceType: ClusterIP
   servicePort: 8080
-  installPlugins: []
+  installPlugins:
+    - bouncycastle-api:2.18
+    - workflow-multibranch:2.21
+    - jsch:0.1.55.2
+    - trilead-api:1.0.6
+    - script-security:1.72
+    - configuration-as-code:1.40
+    - configuration-as-code-groovy:1.1
+    - workflow-scm-step:2.11
+    - jquery-detached:1.2.1
+    - cloudbees-folder:6.12
+    - plain-credentials:1.7
+    - snakeyaml-api:1.26.4
+    - structs:1.20
+    - git:4.2.2
+    - jdk-tool:1.4
+    - token-macro:2.12
+    - ssh-credentials:1.18.1
+    - branch-api:2.5.6
+    - configuration-as-code-support:1.18
+    - mailer:1.32
+    - github-oauth:0.33
+    - matrix-project:1.14
+    - workflow-step-api:2.22
+    - jackson2-api:2.11.0
+    - apache-httpcomponents-client-4-api:4.5.10-2.0
+    - ace-editor:1.1
+    - credentials:2.3.7
+    - github-branch-source:2.7.1
+    - display-url-api:2.3.2
+    - git-client:3.2.1
+    - github-api:1.111
+    - workflow-cps:2.80
+    - workflow-api:2.40
+    - scm-api:2.6.3
+    - junit:1.29
+    - workflow-support:3.4
+    - command-launcher:1.4
+    - github:1.30.0
+    - workflow-job:2.39
+    - workflow-aggregator:2.6
+    - kubernetes:1.25.7
+
   scriptApproval:
     - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
     - "new groovy.json.JsonSlurperClassic"
@@ -19,21 +60,67 @@ master:
     - "method java.util.Collection toArray"
     - "staticMethod org.kohsuke.groovy.sandbox.impl.Checker checkedCall java.lang.Object boolean boolean java.lang.String java.lang.Object[]"
     - "staticMethod org.kohsuke.groovy.sandbox.impl.Checker checkedGetProperty java.lang.Object boolean boolean java.lang.Object"
+  JCasC:
+    enabled: true
+    configScripts:
+      github-conf: |
+        jenkins:
+          authorizationStrategy:
+            github:
+              adminUserNames: "$GITHUB_USER_NAME"
+              allowAnonymousJobStatusPermission: true
+              allowAnonymousReadPermission: false
+              allowCcTrayPermission: false
+              allowGithubWebHookPermission: false
+              authenticatedUserCreateJobPermission: false
+              authenticatedUserReadPermission: false
+              useRepositoryPermissions: true
+              organizationNames: ""
+          securityRealm:
+            github:
+              clientID: "$GITHUB_CLIENT_ID"
+              clientSecret: "$GITHUB_SECRET_ID"
+              githubApiUri: "https://api.github.com"
+              githubWebUri: "https://github.com"
+              oauthScopes: "read:org,user:email,repo"
 
   ingress:
     enabled: true
     apiVersion: networking.k8s.io/v1beta1
     annotations:
       kubernetes.io/ingress.class: nginx
-      kubernetes.io/tls-acme: "true"
-      cert-manager.io/issuer: $ISSUER
-      ingress.kubernetes.io/secure-backends: "true"
     hostName: $HOST
-    tls:
-      - hosts:
-          - $HOST
-        secretName: $HOST
+
 persistence:
   existingClaim: $PVC
+
 agent:
-  enabled: false
+  enabled: true
+  image: "jenkins/jnlp-slave"
+  tag: "3.27-1"
+  customJenkinsLabels: []
+  # name of the secret to be used for image pulling
+  imagePullSecretName:
+  componentName: "jenkins-slave"
+  privileged: false
+  resources:
+    requests:
+      cpu: "512m"
+      memory: "512Mi"
+    limits:
+      cpu: "512m"
+      memory: "512Mi"
+  # You may want to change this to true while testing a new image
+  alwaysPullImage: false
+  # Controls how agent pods are retained after the Jenkins build completes
+  # Possible values: Always, Never, OnFailure
+  podRetention: "Never"
+  # You can define the volumes that you want to mount for this container
+  # Allowed types are: ConfigMap, EmptyDir, HostPath, Nfs, PVC, Secret
+  # Configure the attributes as they appear in the corresponding Java class for that type
+  # https://github.com/jenkinsci/kubernetes-plugin/tree/master/src/main/java/org/csanchez/jenkins/plugins/kubernetes/volumes
+  volumes: []
+  # - type: ConfigMap
+  #   configMapName: myconfigmap
+  #   mountPath: /var/myapp/myconfigmap
+  # - type: EmptyDir

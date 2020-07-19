@@ -23,7 +23,7 @@ resource "null_resource" "activate_service_account" {
 }
 
 resource "google_compute_network" "vpc_network" {
-  name                    = "${var.k8s_cluster_name}-vpc"
+  name                    = "${var.gke_name}-vpc"
   auto_create_subnetworks = false
 
   depends_on = [
@@ -34,7 +34,7 @@ resource "google_compute_network" "vpc_network" {
 
 module "subnetwork" {
   source                  = "../subnetwork"
-  name                    = "${var.k8s_cluster_name}-subnet"
+  name                    = "${var.gke_name}-subnet"
   network                 = "${google_compute_network.vpc_network.self_link}"
   ip_cidr_range           = var.nodes_ip_cidr_range
   create_secondary_ranges = true
@@ -54,7 +54,7 @@ module "subnetwork" {
 module "gke" {
   source                     = "terraform-google-modules/kubernetes-engine/google"
   project_id                 = var.project_name
-  name                       = var.k8s_cluster_name
+  name                       = var.gke_name
   region                     = var.region
   zones                      = var.zones
   network                    = google_compute_network.vpc_network.name
@@ -70,7 +70,7 @@ module "gke" {
     {
       name         = "pool-01"
       autoscaling  = false
-      node_count   = 5
+      node_count   = 3
       auto_upgrade = true
     }
   ]
@@ -114,22 +114,6 @@ resource "helm_release" "ingress" {
     null_resource.get_kube_credential
   ]
 }
-
-resource "helm_release" "cert_manager" {
-  name    = "cert-manager"
-  chart   = "jetstack/cert-manager"
-  version = "v0.15.0"
-
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
-  depends_on = [
-    null_resource.get_kube_credential
-  ]
-}
-
-
 data "kubernetes_service" "nginx_ingress" {
   metadata {
     name = "nginx-ingress-controller"
@@ -140,7 +124,7 @@ data "kubernetes_service" "nginx_ingress" {
 }
 
 data "google_dns_managed_zone" "env_dns_zone" {
-  name = "mlevostre"
+  name = var.dns_zone_name
 }
 
 resource "google_dns_record_set" "ingress_domain" {

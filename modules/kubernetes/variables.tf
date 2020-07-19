@@ -6,9 +6,11 @@ variable region {}
 
 variable zones {}
 
-variable k8s_cluster_name {}
+variable gke_name {}
 
 variable resource_folder {}
+
+variable dns_zone_name {}
 
 variable pods_ip_cidr_range {
   type        = string

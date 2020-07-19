@@ -17,9 +17,9 @@ variable zones {
   description = "GCP zone"
 }
 
-variable k8s_cluster_name {
+variable gke_name {
   type        = string
-  description = "K8S cluster name"
+  description = "GKE name"
 }
 
 variable resource_folder {
@@ -31,7 +31,7 @@ variable resource_folder {
 variable devops_namespace {
   type        = string
   description = "DevOps K8s namespace"
-  default     = "devops-namespace"
+  default     = "tools"
 }
 
 variable issuer_email {
@@ -45,7 +45,22 @@ variable issuer_name {
   default     = "letsencrypt-prod"
 }
 
-variable jenkins_password {
+variable github_admin_user {
   type        = string
-  description = "Jenkins Password"
+  description = "The user admin for github"
+}
+
+variable github_client_id {
+  type        = string
+  description = "The github application id"
+}
+
+variable github_secret_id {
+  type        = string
+  description = "The github application secret"
+}
+
+variable dns_zone_name {
+  type        = string
+  description = "The github application secret"
 }

@@ -29,11 +29,6 @@ variable create_issuer_yml {
   default     = "/create_issuer.yml"
 }
 
-variable jenkins_password {
-  type        = string
-  description = "Jenkins Password"
-}
-
 variable google_client_access_token {
   type        = string
   description = "Goolge GCP client access token"
@@ -47,4 +42,19 @@ variable "gke_endpoint"{
 variable "gke_ca_certifacte"{
   type        = string
   description = "GKE ca certificate not in Base64"
+}
+
+variable github_admin_user {
+  type        = string
+  description = "The user admin for github"
+}
+
+variable github_client_id {
+  type        = string
+  description = "The github application id"
+}
+
+variable github_secret_id {
+  type        = string
+  description = "The github application secret"
 }
